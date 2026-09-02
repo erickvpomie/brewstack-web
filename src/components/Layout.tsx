@@ -53,7 +53,7 @@ export function Layout() {
             <FiChevronLeft size={20} />
           </Button>
           <Button
-            className="hidden lg:inline-flex"
+            className="sidebar-toggle hidden lg:inline-flex"
             size="sm"
             variant="ghost"
             onPress={() => setCompact((value) => !value)}
@@ -76,8 +76,8 @@ export function Layout() {
           ))}
         </nav>
       </aside>
-      <main className={`layout-main ${compact ? 'layout-main-compact' : ''}`}>
-        <header className="flex min-h-20 items-center justify-between gap-4 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6 lg:px-10">
+      <main className={`layout-main min-w-0 ${compact ? 'layout-main-compact' : ''}`}>
+        <header className="flex min-h-20 items-center justify-between gap-3 border-b border-stone-200 bg-white/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-6 lg:px-10">
           <Button
             className="lg:hidden"
             variant="ghost"
@@ -86,9 +86,11 @@ export function Layout() {
           >
             <FiMenu size={20} />
           </Button>
-          <div>
-            <p className="text-sm text-stone-500">Espacio de trabajo</p>
-            <h1 className="text-xl font-semibold">Operaciones de cafetería</h1>
+          <div className="min-w-0">
+            <p className="text-xs text-stone-500 sm:text-sm">Espacio de trabajo</p>
+            <h1 className="truncate text-base font-semibold sm:text-xl">
+              Operaciones de cafetería
+            </h1>
           </div>
         </header>
         <motion.section
