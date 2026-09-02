@@ -1,0 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+@import '@heroui/styles';
+:root {
+  color-scheme: light;
+  --canvas: #f4f6f8;
+  --ink: #18212b;
+  --field-bg: #ffffff;
+  --field-border: #cbd5df;
+  --field-hover: #f8fafb;
+  --brand: #768948;
+  --brand-soft: #f1f4e9;
+}
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+button,
+input,
+textarea,
+select,
+[role='button'] {
+  box-shadow: none !important;
+}
+
+.input,
+.textarea,
+.input input,
+.textarea textarea,
+[data-slot='input'],
+[data-slot='input-wrapper'],
+[data-slot='textarea'],
+[data-slot='textarea-wrapper'],
+[data-slot='select'],
+[data-slot='select-trigger'] {
+  background-color: var(--field-bg) !important;
+  border: 1px solid var(--field-border) !important;
+  border-color: var(--field-border) !important;
+  border-radius: 1rem !important;
+  min-height: 2.75rem;
+}
+
+.input:hover,
+.textarea:hover,
+.input:hover input,
+.textarea:hover textarea,
+[data-slot='input-wrapper']:hover,
+[data-slot='textarea-wrapper']:hover,
+[data-slot='select-trigger']:hover {
+  background-color: var(--field-hover) !important;
+  border-color: var(--field-border) !important;
+}
+
+.input:focus,
+.textarea:focus,
+.input:focus-within,
+.textarea:focus-within,
+.input:focus-within input,
+.textarea:focus-within textarea,
+.input[data-focused='true'],
+.textarea[data-focused='true'],
+[data-slot='input-wrapper'][data-focused='true'],
+[data-slot='textarea-wrapper'][data-focused='true'],
+[data-slot='select-trigger'][data-focused='true'] {
+  background-color: var(--field-bg) !important;
+  border-color: var(--brand) !important;
+}
+
+[data-slot='input'] input,
+[data-slot='textarea'] textarea {
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-slot='select'] > button {
+  width: 100%;
+  min-height: 2.75rem;
+  padding-inline: 0.875rem;
+  background-color: var(--field-bg) !important;
+  border: 1px solid var(--field-border) !important;
+  border-radius: 1rem !important;
+  color: var(--ink) !important;
+}
+
+[data-slot='select'] > button:hover {
+  background-color: var(--field-hover) !important;
+  border-color: #aebdcc !important;
+}
+
+[data-slot='select'] > button:focus-visible,
+[data-slot='select'] > button[data-focused='true'] {
+  border-color: var(--brand) !important;
+  outline: 2px solid color-mix(in srgb, var(--brand) 25%, transparent);
+  outline-offset: 2px;
+}
+
+label,
+[data-slot='label'] {
+  line-height: 1.35;
+}
+
+.brew-form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.brew-form-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .brew-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brew-form-span-full {
+    grid-column: 1 / -1;
+  }
+}
+
+button,
+input,
+textarea,
+select,
+[role='button'],
+a {
+  transition:
+    background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 70%, transparent);
+  outline-offset: 2px;
+}
+
+[class*='rounded-'] {
+  border-radius: 1rem !important;
+}
+
+:where(.card, [data-slot='card']) {
+  border-radius: 1rem !important;
+  box-shadow: none !important;
+  border-color: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+:where(button, [role='button'], [data-slot='button']) {
+  border-radius: 1rem !important;
+}
+
+:where(button, [data-slot='button'])[data-variant='primary'] {
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: white !important;
+}
+.brew-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.brew-table thead th {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  font-weight: 650;
+}
+.brew-table tbody td {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+}
+.brew-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  width: 15rem;
+  flex-direction: column;
+  background: #17202b;
+  padding: 1.35rem;
+  color: #cbd5e1;
+  transform: translateX(-100%);
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgb(15 23 42 / 0.45);
+}
+.sidebar-open {
+  transform: translateX(0);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1rem;
+  padding: 0.7rem 0.8rem;
+  color: #b8c2cf;
+  transition:
+    background 220ms ease,
+    color 220ms ease,
+    transform 220ms ease;
+}
+.nav-item:hover,
+.nav-item-active {
+  background: rgb(255 255 255 / 0.08);
+  color: #f2c675;
+}
+
+.nav-item:hover {
+  transform: translateX(2px);
+}
+.layout-main {
+  transition: margin-left 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sidebar-compact {
+  width: 4.75rem;
+  padding-inline: 0.75rem;
+}
+.sidebar-compact .sidebar-brand,
+.sidebar-compact .sidebar-label {
+  display: none;
+}
+.sidebar-compact .nav-item {
+  justify-content: center;
+  padding-inline: 0.65rem;
+}
+.layout-main-compact {
+  margin-left: 4.75rem;
+}
+@media (min-width: 1024px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+  .layout-main {
+    margin-left: 15rem;
+  }
+}
+
+@media print {
+  .sidebar,
+  header,
+  .sidebar-backdrop,
+  button {
+    display: none !important;
+  }
+  .layout-main,
+  .layout-main-compact {
+    margin-left: 0 !important;
+  }
+  body {
+    background: white !important;
+  }
+}
+@media (max-width: 1023px) {
+  .layout-main,
+  .layout-main-compact {
+    margin-left: 0;
+  }
+}
