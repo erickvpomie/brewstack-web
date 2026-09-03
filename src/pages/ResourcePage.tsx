@@ -42,15 +42,7 @@ const label = (field: string) =>
   labels[field] ?? field.replace(/([A-Z])/g, ' $1').replace(/^./, (v) => v.toUpperCase());
 const displayValue = (field: string, value: unknown) => {
   if (field === 'products' && Array.isArray(value)) {
-    return (
-      value
-        .map((entry) => {
-          if (!entry || typeof entry !== 'object') return null;
-          return (entry as Record<string, unknown>).name;
-        })
-        .filter((name): name is string => typeof name === 'string')
-        .join(', ') || 'Sin productos'
-    );
+    return value.length;
   }
   return valueLabels[String(value)] ?? String(value ?? '—');
 };

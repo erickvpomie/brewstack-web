@@ -436,7 +436,7 @@ export function OrdersPage() {
         </Modal.Backdrop>
       </Modal>
       <Card className="rounded-2xl border border-default-200/70 shadow-none">
-        <Card.Content className="p-5 sm:p-6">
+        <Card.Content className="p-0 lg:p-4">
           {orders.isPending ? (
             <div className="flex min-h-48 items-center justify-center">
               <Spinner />

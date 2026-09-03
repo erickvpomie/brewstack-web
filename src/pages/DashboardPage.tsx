@@ -29,7 +29,7 @@ export function DashboardPage() {
     },
     {
       name: 'Almacenes activos',
-      value: warehouses.data?.filter((item) => item.active).length ?? 0,
+      value: warehouses.data?.length ?? 0,
       Icon: FiBox,
     },
     {
@@ -117,8 +117,8 @@ export function DashboardPage() {
               <Card.Content className="gap-4">
                 <h3 className="text-lg font-semibold">Resumen de almacenes</h3>
                 <p className="text-sm text-default-500">
-                  {warehouses.data?.filter((item) => item.active).length ?? 0} almacenes activos
-                  para organizar tus existencias.
+                  {warehouses.data?.length ?? 0} almacenes disponibles para organizar tus
+                  existencias.
                 </p>
               </Card.Content>
             </Card>

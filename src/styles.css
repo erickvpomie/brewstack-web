@@ -503,14 +503,23 @@ a:focus-visible {
   }
 
   .brew-table-scroll {
+    width: 100%;
+    max-width: 100%;
     overflow: visible;
-    padding: 0 1rem 1rem;
+    padding: 0 0 1rem;
+  }
+
+  .brew-table-scroll > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .brew-table-scroll .brew-table {
     display: block;
     width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .brew-table thead {
@@ -531,10 +540,10 @@ a:focus-visible {
   .brew-table tbody tr {
     margin-bottom: 0.75rem;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border) !important;
     border-radius: 1rem;
     background: var(--surface);
-    box-shadow: 0 8px 24px rgb(8 47 73 / 6%);
+    box-shadow: none;
   }
 
   .brew-table tbody tr:last-child {
@@ -547,9 +556,10 @@ a:focus-visible {
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1rem;
     text-align: right;
     overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .brew-table tbody td::before {
@@ -565,19 +575,25 @@ a:focus-visible {
   }
 
   .brew-table tbody td > * {
+    min-width: 0;
     max-width: 62%;
   }
 
   .brew-table tbody td[data-label='Acciones'] {
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3.5rem;
+    border-top: 1px solid var(--border);
     background: var(--surface-secondary);
   }
 
   .brew-table tbody td[data-label='Acciones']::before {
-    margin-right: auto;
+    flex: 1 1 auto;
+    margin-right: 1rem;
   }
 
   .brew-table tbody td[data-label='Acciones'] > * {
+    flex-shrink: 0;
     max-width: none;
   }
 }

@@ -30,7 +30,7 @@ export function App() {
               <ResourcePage
                 resource="warehouses"
                 title="Almacenes"
-                fields={['name', 'code', 'address']}
+                fields={['name', 'description']}
               />
             }
           />
