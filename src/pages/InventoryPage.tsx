@@ -99,6 +99,7 @@ export function InventoryPage() {
                   <div className="brew-form-field brew-form-span-full">
                     <span className="block text-sm font-medium text-default-700">Producto</span>
                     <Select
+                      className="brew-select"
                       aria-label="Producto"
                       placeholder="Selecciona un producto"
                       value={productId}
@@ -124,6 +125,7 @@ export function InventoryPage() {
                   <div className="brew-form-field brew-form-span-full">
                     <span className="block text-sm font-medium text-default-700">Almacén</span>
                     <Select
+                      className="brew-select"
                       aria-label="Almacén"
                       placeholder="Selecciona un almacén"
                       value={warehouseId}
@@ -253,7 +255,7 @@ export function InventoryPage() {
             <p className="p-10 text-center text-default-500">No hay existencias registradas.</p>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Table.ScrollContainer className="overflow-x-auto">
+              <Table.ScrollContainer className="brew-table-scroll">
                 <Table>
                   <Table.Content
                     aria-label="Inventario"
@@ -277,33 +279,33 @@ export function InventoryPage() {
                             key={item.id}
                             className="transition-colors hover:bg-amber-50/50"
                           >
-                            <Table.Cell>
+                            <Table.Cell data-label="Producto">
                               <p className="font-semibold text-default-900">
                                 {text(item.productName, 'Producto')}
                               </p>
                             </Table.Cell>
-                            <Table.Cell>
+                            <Table.Cell data-label="Ubicación">
                               <p>{text(item.warehouseName, 'Almacén')}</p>
                               <p className="text-xs text-default-500">Almacén de almacenamiento</p>
                             </Table.Cell>
-                            <Table.Cell>
+                            <Table.Cell data-label="Stock actual">
                               <span className={low ? 'font-bold text-danger' : 'font-semibold'}>
                                 {current}
                               </span>
                             </Table.Cell>
-                            <Table.Cell>{minimum}</Table.Cell>
-                            <Table.Cell>
+                            <Table.Cell data-label="Stock mínimo">{minimum}</Table.Cell>
+                            <Table.Cell data-label="Estado">
                               <Chip color={low ? 'danger' : 'success'} size="sm">
                                 {low ? (
                                   <>
-                                    <FiAlertCircle aria-hidden="true" /> Stock bajo
+                                    <FiAlertCircle aria-hidden="true" /> BAJO
                                   </>
                                 ) : (
-                                  'En rango'
+                                  'OK'
                                 )}
                               </Chip>
                             </Table.Cell>
-                            <Table.Cell>
+                            <Table.Cell data-label="Acciones">
                               <Button
                                 isIconOnly
                                 size="sm"

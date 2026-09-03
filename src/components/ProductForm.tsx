@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, ListBox, Select, Switch, TextArea } from '@heroui/react';
 import { useQuery } from '@tanstack/react-query';
-import { listResource } from '../services/api';
+import { listResource, listUnits } from '../services/api';
 import type { Product, ProductInput } from '../types/product';
 import { useSaveProduct } from '../hooks/useProducts';
 const schema = z.object({
@@ -31,7 +31,7 @@ export function ProductForm({ product, onDone }: { product?: Product; onDone: ()
       name: product?.name ?? '',
       description: product?.description ?? '',
       category: product?.category ?? '',
-      unit: product?.unit ?? 'unit',
+      unit: product?.unit ?? 'pz',
       cost: product?.cost ?? 0,
       minimumStock: product?.minimumStock ?? 0,
       active: product?.active ?? true,
@@ -51,27 +51,65 @@ export function ProductForm({ product, onDone }: { product?: Product; onDone: ()
     queryKey: ['warehouses', 'product-form'],
     queryFn: () => listResource('warehouses', ''),
   });
+  const units = useQuery({
+    queryKey: ['units'],
+    queryFn: listUnits,
+    staleTime: 1000 * 60 * 60,
+  });
   const selectedSupplierIds = watch('supplierIds') ?? [];
   const selectedWarehouseIds = watch('warehouseIds') ?? [];
   const selectedCategory = watch('category');
+  const selectedUnit = watch('unit');
   const onSubmit = (data: ProductInput) => save.mutate(data, { onSuccess: onDone });
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="brew-form-grid">
-      {[
-        ['name', 'Nombre'],
-        ['unit', 'Unidad'],
-      ].map(([key, label]) => (
-        <div key={key} className="brew-form-field">
-          <span className="block text-sm font-medium text-default-700">{label}</span>
-          <Input aria-label={label} {...register(key as keyof ProductInput)} />
-          {errors[key as keyof ProductInput] && (
-            <span className="text-xs text-red-600">Campo obligatorio</span>
-          )}
-        </div>
-      ))}
+      <div className="brew-form-field">
+        <span className="block text-sm font-medium text-default-700">Nombre</span>
+        <Input aria-label="Nombre" {...register('name')} />
+        {errors.name && <span className="text-xs text-red-600">Campo obligatorio</span>}
+      </div>
+      <div className="brew-form-field">
+        <span className="block text-sm font-medium text-default-700">Unidad</span>
+        <Select
+          className="brew-select"
+          aria-label="Unidad"
+          placeholder="Selecciona una unidad"
+          value={selectedUnit}
+          isDisabled={units.isPending || units.isError}
+          onChange={(key) =>
+            setValue('unit', String(key), { shouldDirty: true, shouldValidate: true })
+          }
+        >
+          <Select.Trigger>
+            <Select.Value />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {units.data?.map((unit) => (
+                <ListBox.Item key={unit.id} id={unit.id} textValue={unit.name}>
+                  {unit.name} ({unit.symbol})
+                </ListBox.Item>
+              ))}
+              {selectedUnit && !units.data?.some((unit) => unit.id === selectedUnit) && (
+                <ListBox.Item id={selectedUnit} textValue={selectedUnit}>
+                  {selectedUnit}
+                </ListBox.Item>
+              )}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        {units.isPending ? (
+          <span className="text-xs text-default-500">Cargando unidades…</span>
+        ) : units.isError ? (
+          <span className="text-xs text-danger">No se pudieron cargar las unidades.</span>
+        ) : errors.unit ? (
+          <span className="text-xs text-red-600">Selecciona una unidad</span>
+        ) : null}
+      </div>
       <div className="brew-form-field">
         <span className="block text-sm font-medium text-default-700">Categoría</span>
         <Select
+          className="brew-select"
           aria-label="Categoría"
           placeholder="Selecciona una categoría"
           value={selectedCategory}

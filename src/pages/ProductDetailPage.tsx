@@ -36,7 +36,7 @@ export function ProductDetailPage() {
                     .reduce((sum, item) => sum + Number(item.quantity ?? 0), 0) ?? 0;
                 return (
                   <Chip color={stock <= data.minimumStock ? 'danger' : 'success'} size="sm">
-                    {stock <= data.minimumStock ? 'Stock bajo' : 'Stock en rango'}
+                    {stock <= data.minimumStock ? 'BAJO' : 'OK'}
                   </Chip>
                 );
               })()}

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Chip, Input, Modal, Spinner, Table } from '@heroui/react';
-import { FiEdit3, FiPlus, FiPower } from 'react-icons/fi';
+import { FiEdit3, FiPlus } from 'react-icons/fi';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { listResource } from '../services/api';
-import { useProducts, useToggleProduct } from '../hooks/useProducts';
+import { useProducts } from '../hooks/useProducts';
 import { ProductForm } from '../components/ProductForm';
 import type { Product } from '../types/product';
 export function ProductsPage() {
@@ -17,7 +17,6 @@ export function ProductsPage() {
     queryKey: ['inventory', 'products'],
     queryFn: () => listResource('inventory', ''),
   });
-  const toggle = useToggleProduct();
   return (
     <>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -60,8 +59,8 @@ export function ProductsPage() {
         </Modal.Backdrop>
       </Modal>
       <Card className="rounded-2xl border border-default-200/70 shadow-none">
-        <Card.Content className="p-0 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-default-200/70 bg-default-50/60 pb-4">
+        <Card.Content className="p-0">
+          <div className="brew-table-toolbar mb-4 pt-0">
             <div>
               <p className="text-sm font-semibold text-default-700">Catálogo de productos</p>
               <p className="mt-1 text-xs text-default-500">
@@ -96,9 +95,12 @@ export function ProductsPage() {
                   <Spinner size="sm" /> Actualizando
                 </div>
               )}
-              <Table.ScrollContainer className="-mx-2 overflow-x-auto px-2">
+              <Table.ScrollContainer className="brew-table-scroll">
                 <Table>
-                  <Table.Content aria-label="Productos" className="brew-table min-w-160 text-sm">
+                  <Table.Content
+                    aria-label="Productos"
+                    className="brew-table min-w-160 text-sm"
+                  >
                     <Table.Header className="bg-default-100/70 text-xs uppercase tracking-wider text-default-600">
                       <Table.Column>Producto</Table.Column>
                       <Table.Column>Almacenes</Table.Column>
@@ -114,7 +116,7 @@ export function ProductsPage() {
                           key={product.id}
                           className="border-b border-default-100 transition-colors duration-300 hover:bg-amber-50/50"
                         >
-                          <Table.Cell>
+                          <Table.Cell data-label="Producto">
                             <Link
                               className="font-semibold text-default-900 transition-colors hover:text-amber-700"
                               to={`/products/${product.id}`}
@@ -127,7 +129,7 @@ export function ProductsPage() {
                                 : 'Sin proveedores'}
                             </p>
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell data-label="Almacenes">
                             {inventory.data
                               ?.filter((item) => item.productId === product.id)
                               .map(
@@ -136,8 +138,8 @@ export function ProductsPage() {
                               )
                               .join(', ') || 'Sin existencias'}
                           </Table.Cell>
-                          <Table.Cell>{product.category}</Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell data-label="Categoría">{product.category}</Table.Cell>
+                          <Table.Cell data-label="Stock">
                             {(() => {
                               const stock =
                                 inventory.data
@@ -145,21 +147,26 @@ export function ProductsPage() {
                                   .reduce((sum, item) => sum + Number(item.quantity ?? 0), 0) ?? 0;
                               const low = stock <= product.minimumStock;
                               return (
-                                <Chip color={low ? 'danger' : 'success'} size="sm">
-                                  {low ? 'Stock bajo' : `${stock} ${product.unit}`}
-                                </Chip>
+                                <div className="flex items-center gap-2">
+                                  <span>
+                                    {stock} {product.unit}
+                                  </span>
+                                  <Chip color={low ? 'danger' : 'success'} size="sm">
+                                    {low ? 'BAJO' : 'OK'}
+                                  </Chip>
+                                </div>
                               );
                             })()}
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell data-label="Coste">
                             ${product.cost.toFixed(2)} / {product.unit}
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell data-label="Estado">
                             <Chip color={product.active ? 'success' : 'default'} size="sm">
-                              {product.active ? 'Activo' : 'Inactivo'}
+                              {product.active ? 'ACTIVO' : 'INACTIVO'}
                             </Chip>
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell data-label="Acciones">
                             <div className="flex items-center gap-4">
                               <Button
                                 isIconOnly
@@ -169,21 +176,6 @@ export function ProductsPage() {
                                 onPress={() => setEditing(product)}
                               >
                                 <FiEdit3 aria-hidden="true" />
-                              </Button>
-                              <Button
-                                isIconOnly
-                                size="sm"
-                                variant="secondary"
-                                aria-label={
-                                  product.active
-                                    ? `Desactivar ${product.name}`
-                                    : `Activar ${product.name}`
-                                }
-                                onPress={() =>
-                                  toggle.mutate({ id: product.id, active: !product.active })
-                                }
-                              >
-                                <FiPower aria-hidden="true" />
                               </Button>
                             </div>
                           </Table.Cell>

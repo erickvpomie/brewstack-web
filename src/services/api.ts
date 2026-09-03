@@ -17,6 +17,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const body = await response.json().catch(() => ({}));
     throw new Error(body.message ?? 'Request failed');
   }
+  if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }
 
@@ -61,6 +62,10 @@ export const listResource = (resource: string, search: string): Promise<Resource
       });
     },
   );
+
+export type Unit = { id: string; name: string; symbol: string };
+export const listUnits = () => request<Unit[]>('/api/units');
+
 export const createResource = (resource: string, input: Record<string, unknown>) =>
   request<ResourceItem>(`/api/${resource}`, { method: 'POST', body: JSON.stringify(input) });
 export const updateResource = (resource: string, id: string, input: Record<string, unknown>) =>
@@ -68,6 +73,11 @@ export const updateResource = (resource: string, id: string, input: Record<strin
 
 export type OrderItemInput = { productId: string; quantity: number };
 export type OrderInput = { items: OrderItemInput[]; notes?: string };
+export type OrderPatchInput = {
+  items?: OrderItemInput[];
+  notes?: string;
+  status?: 'pending' | 'approved' | 'received' | 'cancelled';
+};
 export type Order = ResourceItem & {
   items: Array<
     ResourceItem & {
@@ -88,3 +98,7 @@ export const createOrder = (input: OrderInput) =>
   request<Order>('/api/orders', { method: 'POST', body: JSON.stringify(input) }).then(
     normalize,
   ) as Promise<Order>;
+export const updateOrder = (id: string, input: OrderPatchInput) =>
+  request<Order>(`/api/orders/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+export const deleteOrder = (id: string) =>
+  request<void>(`/api/orders/${id}`, { method: 'DELETE' });

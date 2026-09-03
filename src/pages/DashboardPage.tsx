@@ -1,8 +1,15 @@
-import { Card, Spinner } from '@heroui/react';
+import { Button, Card, Spinner } from '@heroui/react';
 import { useQueries } from '@tanstack/react-query';
 import { listResource } from '../services/api';
 import { motion } from 'motion/react';
-import { FiAlertCircle, FiArchive, FiBox, FiPackage } from 'react-icons/fi';
+import {
+  FiAlertCircle,
+  FiArchive,
+  FiBox,
+  FiMessageCircle,
+  FiPackage,
+  FiStar,
+} from 'react-icons/fi';
 import type { IconType } from 'react-icons';
 
 export function DashboardPage() {
@@ -43,6 +50,39 @@ export function DashboardPage() {
           Lo esencial para mantener tu cafetería abastecida y en marcha.
         </p>
       </div>
+      <Card className="personalized-banner mb-6 overflow-hidden border-0 shadow-none">
+        <Card.Content className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <span className="personalized-banner-icon" aria-hidden="true">
+              <FiStar size={20} />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] opacity-75">
+                Experiencia personalizada
+              </p>
+              <p className="mt-1 text-lg font-bold">Hecho a la medida para Rachith</p>
+              <p className="mt-1 text-sm opacity-80">
+                Una operación más clara para el día a día de tu cafetería.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+            <span className="personalized-banner-version">Versión 1.0</span>
+            <Button
+              variant="secondary"
+              onPress={() =>
+                window.open(
+                  'https://wa.me/525614218380?text=Hola%2C%20quiero%20ponerme%20en%20contacto%20sobre%20BrewStack.',
+                  '_blank',
+                  'noopener,noreferrer',
+                )
+              }
+            >
+              <FiMessageCircle aria-hidden="true" /> Contactar por WhatsApp
+            </Button>
+          </div>
+        </Card.Content>
+      </Card>
       {results.some((r) => r.isPending) ? (
         <div className="flex min-h-64 items-center justify-center">
           <Spinner />

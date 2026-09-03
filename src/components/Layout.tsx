@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Button } from '@heroui/react';
 import {
   FiArchive,
+  FiActivity,
   FiBox,
   FiChevronLeft,
   FiChevronRight,
@@ -39,9 +40,9 @@ export function Layout() {
       <aside
         className={`sidebar ${open ? 'sidebar-open' : ''} ${compact ? 'sidebar-compact' : ''}`}
       >
-        <div className="mb-10 flex items-center justify-between text-2xl font-bold text-white">
+        <div className="sidebar-header mb-10 flex items-center justify-between text-2xl font-bold">
           <span className="sidebar-brand">
-            Brew<span className="text-amber-400">Stack</span>
+            Brew<span>Stack</span>
           </span>
           <Button
             className="lg:hidden"
@@ -77,7 +78,7 @@ export function Layout() {
         </nav>
       </aside>
       <main className={`layout-main min-w-0 ${compact ? 'layout-main-compact' : ''}`}>
-        <header className="flex min-h-20 items-center justify-between gap-3 border-b border-stone-200 bg-white/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-6 lg:px-10">
+        <header className="app-header flex min-h-16 items-center gap-3 border-b border-stone-200 bg-white/90 px-3 py-3 backdrop-blur sm:px-6 lg:px-10">
           <Button
             className="lg:hidden"
             variant="ghost"
@@ -86,11 +87,27 @@ export function Layout() {
           >
             <FiMenu size={20} />
           </Button>
-          <div className="min-w-0">
-            <p className="text-xs text-stone-500 sm:text-sm">Espacio de trabajo</p>
-            <h1 className="truncate text-base font-semibold sm:text-xl">
-              Operaciones de cafetería
-            </h1>
+          <div className="hidden min-w-0 lg:block">
+            <p className="header-kicker">
+              BrewStack <span>•</span> Centro de control
+            </p>
+          </div>
+          <div className="header-summary ml-auto hidden items-center gap-3 lg:flex">
+            <div className="header-status-icon" aria-hidden="true">
+              <FiActivity size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-default-500">
+                Operación activa
+              </p>
+              <p className="text-sm font-semibold text-default-900">
+                {new Intl.DateTimeFormat('es-MX', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                }).format(new Date())}
+              </p>
+            </div>
           </div>
         </header>
         <motion.section

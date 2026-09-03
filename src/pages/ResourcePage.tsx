@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Card, Chip, Input, Modal, Spinner, Table } from '@heroui/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { FiEdit3, FiPower } from 'react-icons/fi';
+import { FiEdit3 } from 'react-icons/fi';
 import { createResource, listResource, updateResource, type ResourceItem } from '../services/api';
 
 type Props = { resource: string; title: string; fields: string[]; readOnly?: boolean };
@@ -71,10 +71,6 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
       void client.invalidateQueries({ queryKey: [resource] });
     },
   });
-  const toggle = useMutation({
-    mutationFn: (item: ResourceItem) => updateResource(resource, item.id, { active: !item.active }),
-    onSuccess: () => void client.invalidateQueries({ queryKey: [resource] }),
-  });
   const edit = useMutation({
     mutationFn: ({ id, input }: { id: string; input: Record<string, unknown> }) =>
       updateResource(resource, id, input),
@@ -131,8 +127,8 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
         </Modal.Backdrop>
       </Modal>
       <Card className="rounded-2xl border border-default-200/70 shadow-none">
-        <Card.Content className="p-0 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-default-200/70 bg-default-50/60 pb-4">
+        <Card.Content className="p-0">
+          <div className="brew-table-toolbar mb-4 pt-0">
             <div>
               <p className="text-sm font-semibold text-default-700">
                 Listado de {title.toLowerCase()}
@@ -170,9 +166,12 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
                   <Spinner size="sm" /> Actualizando
                 </div>
               )}
-              <Table.ScrollContainer className="-mx-2 overflow-x-auto px-2">
+              <Table.ScrollContainer className="brew-table-scroll">
                 <Table>
-                  <Table.Content aria-label={title} className="brew-table min-w-160 text-sm">
+                  <Table.Content
+                    aria-label={title}
+                    className="brew-table min-w-160 text-sm"
+                  >
                     <Table.Header className="bg-default-100/70 text-xs uppercase tracking-wider text-default-600">
                       {fields.map((field) => (
                         <Table.Column key={field}>{label(field)}</Table.Column>
@@ -186,10 +185,10 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
                           className="border-b border-default-100 transition-colors duration-300 hover:bg-amber-50/50"
                         >
                           {fields.map((field) => (
-                            <Table.Cell key={field}>
+                            <Table.Cell key={field} data-label={label(field)}>
                               {field === 'active' ? (
                                 <Chip color={item.active ? 'success' : 'default'} size="sm">
-                                  {item.active ? 'Activo' : 'Inactivo'}
+                                  {item.active ? 'ACTIVO' : 'INACTIVO'}
                                 </Chip>
                               ) : (
                                 displayValue(field, item[field])
@@ -197,7 +196,7 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
                             </Table.Cell>
                           ))}
                           {!readOnly && (
-                            <Table.Cell>
+                            <Table.Cell data-label="Acciones">
                               <div className="flex flex-wrap gap-4">
                                 {fields.includes('name') && (
                                   <Button
@@ -208,21 +207,6 @@ export function ResourcePage({ resource, title, fields, readOnly = false }: Prop
                                     onPress={() => setEditing(item)}
                                   >
                                     <FiEdit3 aria-hidden="true" />
-                                  </Button>
-                                )}
-                                {item.active !== undefined && (
-                                  <Button
-                                    isIconOnly
-                                    size="sm"
-                                    variant="secondary"
-                                    aria-label={
-                                      item.active
-                                        ? `Desactivar ${String(item.name ?? 'registro')}`
-                                        : `Activar ${String(item.name ?? 'registro')}`
-                                    }
-                                    onPress={() => toggle.mutate(item)}
-                                  >
-                                    <FiPower aria-hidden="true" />
                                   </Button>
                                 )}
                               </div>

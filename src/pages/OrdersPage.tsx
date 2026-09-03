@@ -11,23 +11,34 @@ import {
   TextArea,
 } from '@heroui/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FiFileText, FiPlus, FiPrinter, FiTrash2 } from 'react-icons/fi';
+import { FiCheckCircle, FiEdit3, FiFileText, FiPlus, FiPrinter, FiTrash2 } from 'react-icons/fi';
 import { motion } from 'motion/react';
-import { createOrder, listOrders, listResource, type Order } from '../services/api';
+import {
+  createOrder,
+  deleteOrder,
+  listOrders,
+  listResource,
+  updateOrder,
+  type Order,
+} from '../services/api';
 
 type DraftLine = { productId: string; quantity: string };
 const money = (value: number) => `$${value.toFixed(2)}`;
 const statusLabels: Record<string, string> = {
-  pending: 'Pendiente',
-  approved: 'Aprobado',
-  received: 'Recibido',
-  cancelled: 'Cancelado',
+  pending: 'PENDIENTE',
+  approved: 'APROBADO',
+  received: 'COMPLETADO',
+  cancelled: 'CANCELADO',
 };
 
 export function OrdersPage() {
   const [creating, setCreating] = useState(new URLSearchParams(location.search).has('new'));
   const [lines, setLines] = useState<DraftLine[]>([{ productId: '', quantity: '1' }]);
   const [notes, setNotes] = useState('');
+  const [editing, setEditing] = useState<Order | null>(null);
+  const [editLines, setEditLines] = useState<DraftLine[]>([]);
+  const [editNotes, setEditNotes] = useState('');
+  const [deleting, setDeleting] = useState<Order | null>(null);
   const client = useQueryClient();
   const products = useQuery({
     queryKey: ['products', 'orders'],
@@ -49,6 +60,30 @@ export function OrdersPage() {
       void client.invalidateQueries({ queryKey: ['orders'] });
     },
   });
+  const edit = useMutation({
+    mutationFn: () =>
+      updateOrder(editing!.id, {
+        items: editLines
+          .filter((line) => line.productId && Number(line.quantity) > 0)
+          .map((line) => ({ productId: line.productId, quantity: Number(line.quantity) })),
+        notes: editNotes,
+      }),
+    onSuccess: () => {
+      setEditing(null);
+      void client.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+  const complete = useMutation({
+    mutationFn: (order: Order) => updateOrder(order.id, { status: 'received' }),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ['orders'] }),
+  });
+  const remove = useMutation({
+    mutationFn: (order: Order) => deleteOrder(order.id),
+    onSuccess: () => {
+      setDeleting(null);
+      void client.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
   const total = useMemo(
     () =>
       lines.reduce((sum, line) => {
@@ -61,6 +96,19 @@ export function OrdersPage() {
   const openNew = () => {
     setLines([{ productId: '', quantity: '1' }]);
     setCreating(true);
+  };
+  const openEdit = (order: Order) => {
+    setEditing(order);
+    setEditLines(
+      order.items.map((item) => ({
+        productId: String(item.productId),
+        quantity: String(item.quantity),
+      })),
+    );
+    setEditNotes(String(order.notes ?? ''));
+  };
+  const confirmDelete = (order: Order) => {
+    setDeleting(order);
   };
   return (
     <div>
@@ -100,13 +148,14 @@ export function OrdersPage() {
                       return (
                         <div
                           key={index}
-                          className="grid gap-4 rounded-2xl border border-default-200 p-4 sm:grid-cols-[1fr_9rem_auto] sm:items-end"
+                          className="relative grid gap-4 rounded-2xl border border-default-200 p-4 pr-14 sm:grid-cols-[1fr_9rem_auto] sm:items-end sm:pr-4"
                         >
                           <div className="space-y-2">
                             <span className="block text-sm font-medium text-default-700">
                               Producto
                             </span>
                             <Select
+                              className="brew-select"
                               aria-label="Producto"
                               placeholder="Selecciona un producto"
                               value={line.productId}
@@ -191,7 +240,7 @@ export function OrdersPage() {
                   <Button
                     type="button"
                     variant="secondary"
-                    className="justify-self-start"
+                            className="absolute right-3 top-3 sm:static sm:justify-self-start"
                     onPress={() =>
                       setLines((current) => [...current, { productId: '', quantity: '1' }])
                     }
@@ -228,6 +277,164 @@ export function OrdersPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+      <Modal isOpen={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <p className="text-sm font-medium text-amber-600">Abastecimiento</p>
+                <Modal.Heading>Editar pedido</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <form
+                  className="brew-form-grid"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (editLines.some((line) => line.productId && Number(line.quantity) > 0))
+                      edit.mutate();
+                  }}
+                >
+                  <div className="brew-form-span-full grid gap-4">
+                    {editLines.map((line, index) => (
+                      <div
+                        key={index}
+                        className="relative grid gap-4 rounded-2xl border border-default-200 p-4 pr-14 sm:grid-cols-[1fr_9rem_auto] sm:items-end sm:pr-4"
+                      >
+                        <div className="space-y-2">
+                          <span className="block text-sm font-medium text-default-700">Producto</span>
+                          <Select
+                            className="brew-select"
+                            aria-label="Producto"
+                            placeholder="Selecciona un producto"
+                            value={line.productId}
+                            onChange={(key) =>
+                              setEditLines((current) =>
+                                current.map((item, itemIndex) =>
+                                  itemIndex === index
+                                    ? { ...item, productId: String(key) }
+                                    : item,
+                                ),
+                              )
+                            }
+                          >
+                            <Select.Trigger>
+                              <Select.Value />
+                            </Select.Trigger>
+                            <Select.Popover>
+                              <ListBox>
+                                {products.data
+                                  ?.filter((item) => item.active)
+                                  .map((item) => (
+                                    <ListBox.Item key={item.id} id={item.id}>
+                                      {item.name}
+                                    </ListBox.Item>
+                                  ))}
+                              </ListBox>
+                            </Select.Popover>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <span className="block text-sm font-medium text-default-700">Cantidad</span>
+                          <Input
+                            aria-label="Cantidad"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={line.quantity}
+                            onChange={(event) =>
+                              setEditLines((current) =>
+                                current.map((item, itemIndex) =>
+                                  itemIndex === index
+                                    ? { ...item, quantity: event.target.value }
+                                    : item,
+                                ),
+                              )
+                            }
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          isIconOnly
+                          variant="ghost"
+                          aria-label="Quitar producto"
+                          className="absolute right-3 top-3 sm:static sm:justify-self-start"
+                          onPress={() =>
+                            setEditLines((current) =>
+                              current.length === 1
+                                ? current
+                                : current.filter((_, itemIndex) => itemIndex !== index),
+                            )
+                          }
+                        >
+                          <FiTrash2 aria-hidden="true" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="justify-self-start"
+                    onPress={() => setEditLines((current) => [...current, { productId: '', quantity: '1' }])}
+                  >
+                    <FiPlus aria-hidden="true" /> Añadir producto
+                  </Button>
+                  <div className="brew-form-field brew-form-span-full">
+                    <span className="text-sm font-medium text-default-700">Notas</span>
+                    <TextArea
+                      aria-label="Notas del pedido"
+                      value={editNotes}
+                      onChange={(event) => setEditNotes(event.target.value)}
+                    />
+                  </div>
+                  {edit.isError && (
+                    <p className="brew-form-span-full text-sm text-danger">{edit.error.message}</p>
+                  )}
+                  <div className="brew-form-span-full flex justify-end gap-4">
+                    <Button type="submit" variant="primary" isDisabled={edit.isPending}>
+                      {edit.isPending ? 'Guardando…' : 'Guardar cambios'}
+                    </Button>
+                  </div>
+                </form>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+      <Modal isOpen={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-lg">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <p className="text-sm font-medium text-danger">Acción irreversible</p>
+                <Modal.Heading>¿Eliminar pedido?</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <p className="text-default-600">
+                  El pedido y sus productos asociados se eliminarán permanentemente.
+                </p>
+                {remove.isError && (
+                  <p className="mt-3 text-sm text-danger">{remove.error.message}</p>
+                )}
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button variant="tertiary" onPress={() => setDeleting(null)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="danger"
+                    isDisabled={remove.isPending}
+                    onPress={() => deleting && remove.mutate(deleting)}
+                  >
+                    {remove.isPending ? 'Eliminando…' : 'Eliminar pedido'}
+                  </Button>
+                </div>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
       <Card className="rounded-2xl border border-default-200/70 shadow-none">
         <Card.Content className="p-5 sm:p-6">
           {orders.isPending ? (
@@ -247,7 +454,13 @@ export function OrdersPage() {
           ) : (
             <div className="space-y-4">
               {orders.data.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onEdit={openEdit}
+                  onComplete={(value) => complete.mutate(value)}
+                  onDelete={confirmDelete}
+                />
               ))}
             </div>
           )}
@@ -257,7 +470,17 @@ export function OrdersPage() {
   );
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({
+  order,
+  onEdit,
+  onComplete,
+  onDelete,
+}: {
+  order: Order;
+  onEdit: (order: Order) => void;
+  onComplete: (order: Order) => void;
+  onDelete: (order: Order) => void;
+}) {
   const totalQuantity =
     order.items?.reduce((sum, item) => sum + Number(item.quantity ?? 0), 0) ?? 0;
   return (
@@ -275,15 +498,31 @@ function OrderCard({ order }: { order: Order }) {
             {order.items?.length ?? 0} productos · {totalQuantity} unidades
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Chip color="warning" size="sm">
-            {statusLabels[order.status ?? ''] ?? 'Pedido'}
+            {statusLabels[order.status ?? ''] ?? 'PEDIDO'}
           </Chip>
           <strong>{money(Number(order.total ?? 0))}</strong>
+          <Button size="sm" variant="secondary" onPress={() => onEdit(order)}>
+            <FiEdit3 aria-hidden="true" /> Editar
+          </Button>
+          {order.status !== 'received' && order.status !== 'cancelled' && (
+            <Button size="sm" variant="secondary" onPress={() => onComplete(order)}>
+              <FiCheckCircle aria-hidden="true" /> Completar
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="danger"
+            onPress={() => onDelete(order)}
+            aria-label="Eliminar pedido"
+          >
+            <FiTrash2 aria-hidden="true" /> Eliminar
+          </Button>
           <Button
             isIconOnly
             size="sm"
-            variant="secondary"
+            variant="ghost"
             aria-label="Imprimir pedido o guardar como PDF"
             onPress={() => window.print()}
           >
