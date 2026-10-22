@@ -24,3 +24,13 @@ export function useToggleProduct() {
     onSuccess: () => client.invalidateQueries({ queryKey: ['products'] }),
   });
 }
+export function useDeleteProduct() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteProduct,
+    onSuccess: (_data, id) => {
+      client.removeQueries({ queryKey: ['products', id], exact: true });
+      void client.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}

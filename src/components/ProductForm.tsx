@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, ListBox, Select, Switch, TextArea } from '@heroui/react';
@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { listResource, listUnits } from '../services/api';
 import type { Product, ProductInput } from '../types/product';
 import { useSaveProduct } from '../hooks/useProducts';
+import { NumberInput } from './NumberInput';
 const schema = z.object({
   name: z.string().min(1),
   description: z.string(),
@@ -25,6 +26,7 @@ export function ProductForm({ product, onDone }: { product?: Product; onDone: ()
     formState: { errors },
     watch,
     setValue,
+    control,
   } = useForm<ProductInput>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -184,11 +186,33 @@ export function ProductForm({ product, onDone }: { product?: Product; onDone: ()
       </div>
       <div className="brew-form-field">
         <span className="block text-sm font-medium text-default-700">Coste</span>
-        <Input aria-label="Coste" type="number" step="0.01" {...register('cost')} />
+        <Controller
+          control={control}
+          name="cost"
+          render={({ field }) => (
+            <NumberInput {...field} aria-label="Coste" onValueChange={field.onChange} />
+          )}
+        />
+        {errors.cost && (
+          <span role="alert" className="text-xs text-danger">
+            Introduce un coste igual o mayor que cero.
+          </span>
+        )}
       </div>
       <div className="brew-form-field">
         <span className="block text-sm font-medium text-default-700">Stock mínimo</span>
-        <Input aria-label="Stock mínimo" type="number" step="0.01" {...register('minimumStock')} />
+        <Controller
+          control={control}
+          name="minimumStock"
+          render={({ field }) => (
+            <NumberInput {...field} aria-label="Stock mínimo" onValueChange={field.onChange} />
+          )}
+        />
+        {errors.minimumStock && (
+          <span role="alert" className="text-xs text-danger">
+            Introduce una cantidad igual o mayor que cero.
+          </span>
+        )}
       </div>
       <div className="brew-form-field brew-form-span-full">
         <span className="text-sm font-medium">Proveedores</span>
@@ -225,9 +249,19 @@ export function ProductForm({ product, onDone }: { product?: Product; onDone: ()
           </div>
         )}
       </div>
-      <label className="brew-form-span-full flex items-center gap-4 text-sm">
-        <Switch defaultSelected>Activo</Switch>
-      </label>
+      <div className="brew-form-span-full text-sm">
+        <Switch
+          isSelected={watch('active')}
+          onChange={(selected) => setValue('active', selected, { shouldDirty: true })}
+        >
+          <Switch.Content aria-label="Producto activo">
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            Activo
+          </Switch.Content>
+        </Switch>
+      </div>
       <Button
         type="submit"
         variant="primary"

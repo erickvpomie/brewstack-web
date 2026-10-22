@@ -1,17 +1,29 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button, Card, Chip, Input, Modal, Spinner, Table } from '@heroui/react';
-import { FiEdit3, FiPlus } from 'react-icons/fi';
+import { FiEdit3, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { listResource } from '../services/api';
 import { useProducts } from '../hooks/useProducts';
 import { ProductForm } from '../components/ProductForm';
+import { DeleteProductDialog } from '../components/DeleteProductDialog';
 import type { Product } from '../types/product';
 export function ProductsPage() {
+  const location = useLocation();
   const [search, setSearch] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(() => new URLSearchParams(location.search).has('new'));
   const [editing, setEditing] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState<Product | null>(null);
+  const [notice, setNotice] = useState(() => {
+    const state: unknown = location.state;
+    return state &&
+      typeof state === 'object' &&
+      'notice' in state &&
+      typeof state.notice === 'string'
+      ? state.notice
+      : '';
+  });
   const { data, isPending, isFetching, isError } = useProducts(search);
   const inventory = useQuery({
     queryKey: ['inventory', 'products'],
@@ -19,6 +31,11 @@ export function ProductsPage() {
   });
   return (
     <>
+      {notice && (
+        <p role="status" className="mb-4 text-sm text-default-700">
+          {notice}
+        </p>
+      )}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-1 text-sm text-amber-700">Base del inventario</p>
@@ -58,6 +75,16 @@ export function ProductsPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+      {deleting && (
+        <DeleteProductDialog
+          product={deleting}
+          onClose={() => setDeleting(null)}
+          onDeleted={() => {
+            setNotice(`Se eliminó ${deleting.name}.`);
+            setDeleting(null);
+          }}
+        />
+      )}
       <Card className="rounded-2xl border border-default-200/70 shadow-none">
         <Card.Content className="p-0">
           <div className="brew-table-toolbar mb-4 pt-0">
@@ -97,12 +124,9 @@ export function ProductsPage() {
               )}
               <Table.ScrollContainer className="brew-table-scroll">
                 <Table>
-                  <Table.Content
-                    aria-label="Productos"
-                    className="brew-table min-w-160 text-sm"
-                  >
+                  <Table.Content aria-label="Productos" className="brew-table min-w-160 text-sm">
                     <Table.Header className="bg-default-100/70 text-xs uppercase tracking-wider text-default-600">
-                      <Table.Column>Producto</Table.Column>
+                      <Table.Column isRowHeader>Producto</Table.Column>
                       <Table.Column>Almacenes</Table.Column>
                       <Table.Column>Categoría</Table.Column>
                       <Table.Column>Stock</Table.Column>
@@ -176,6 +200,16 @@ export function ProductsPage() {
                                 onPress={() => setEditing(product)}
                               >
                                 <FiEdit3 aria-hidden="true" />
+                              </Button>
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="danger-soft"
+                                className="min-h-11 min-w-11"
+                                aria-label={`Eliminar ${product.name}`}
+                                onPress={() => setDeleting(product)}
+                              >
+                                <FiTrash2 aria-hidden="true" />
                               </Button>
                             </div>
                           </Table.Cell>

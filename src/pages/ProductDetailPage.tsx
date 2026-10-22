@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Chip, Modal, Spinner } from '@heroui/react';
-import { FiArrowLeft, FiEdit3 } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit3, FiTrash2 } from 'react-icons/fi';
 import { useProduct } from '../hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
 import { listResource } from '../services/api';
 import { ProductForm } from '../components/ProductForm';
+import { DeleteProductDialog } from '../components/DeleteProductDialog';
 export function ProductDetailPage() {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useProduct(id);
   const inventory = useQuery({
     queryKey: ['inventory', 'product', id],
@@ -15,6 +17,7 @@ export function ProductDetailPage() {
     enabled: Boolean(id),
   });
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   if (isLoading) return <Spinner aria-label="Cargando producto" />;
   if (isError || !data) return <p className="text-red-600">Producto no encontrado.</p>;
   return (
@@ -25,9 +28,9 @@ export function ProductDetailPage() {
       <Card className="mt-5 rounded-2xl border border-default-200/70 shadow-none">
         <Card.Content className="p-5 sm:p-8">
           <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-3xl font-bold">{data.name}</h2>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 basis-full">
+                <h2 className="break-words text-3xl font-bold">{data.name}</h2>
               </div>
               {(() => {
                 const stock =
@@ -42,6 +45,9 @@ export function ProductDetailPage() {
               })()}
               <Button size="sm" variant="secondary" onPress={() => setEditing(true)}>
                 <FiEdit3 aria-hidden="true" /> Editar
+              </Button>
+              <Button size="sm" variant="danger-soft" onPress={() => setDeleting(true)}>
+                <FiTrash2 aria-hidden="true" /> Eliminar
               </Button>
             </div>
             <p className="mt-6 leading-7 text-default-600">
@@ -100,6 +106,18 @@ export function ProductDetailPage() {
                 </Modal.Container>
               </Modal.Backdrop>
             </Modal>
+            {deleting && (
+              <DeleteProductDialog
+                product={data}
+                onClose={() => setDeleting(false)}
+                onDeleted={() =>
+                  navigate('/products', {
+                    replace: true,
+                    state: { notice: `Se eliminó ${data.name}.` },
+                  })
+                }
+              />
+            )}
           </>
         </Card.Content>
       </Card>

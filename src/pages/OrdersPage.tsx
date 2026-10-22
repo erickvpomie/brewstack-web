@@ -3,7 +3,6 @@ import {
     Button,
     Card,
     Chip,
-    Input,
     ListBox,
     Modal,
     Select,
@@ -21,6 +20,7 @@ import {
     updateOrder,
     type Order,
 } from '../services/api';
+import { NumberInput } from '../components/NumberInput';
 
 type DraftLine = { productId: string; quantity: string };
 const money = (value: number) => `$${value.toFixed(2)}`;
@@ -160,9 +160,9 @@ export function OrdersPage() {
                                             return (
                                                 <div
                                                     key={index}
-                                                    className="flex items-end justify-between gap-4"
+                                                    className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
                                                 >
-                                                    <div className="w-full space-y-2">
+                                                    <div className="min-w-0 space-y-2">
                             <span className="block text-sm font-medium text-default-700">
                               Producto
                             </span>
@@ -205,30 +205,28 @@ export function OrdersPage() {
                                                             </Select.Popover>
                                                         </Select>
                                                     </div>
-                                                    <div className="w-full space-y-2">
+                                                    <div className="min-w-0 space-y-2">
                             <span className="block text-sm font-medium text-default-700">
                               Cantidad
                             </span>
-                                                        <Input
+                                                        <NumberInput
                                                             aria-label="Cantidad"
-                                                            type="number"
-                                                            min="0.01"
-                                                            step="0.01"
+                                                            min={0.01}
                                                             value={line.quantity}
                                                             className='w-full'
-                                                            onChange={(event) =>
+                                                            onValueChange={(value) =>
                                                                 editing
                                                                     ? setEditLines((current) =>
                                                                         current.map((item, itemIndex) =>
                                                                             itemIndex === index
-                                                                                ? {...item, quantity: event.target.value}
+                                                                                ? {...item, quantity: value}
                                                                                 : item,
                                                                         ),
                                                                     )
                                                                     : setLines((current) =>
                                                                         current.map((item, itemIndex) =>
                                                                             itemIndex === index
-                                                                                ? {...item, quantity: event.target.value}
+                                                                                ? {...item, quantity: value}
                                                                                 : item,
                                                                         ),
                                                                     )
@@ -240,7 +238,7 @@ export function OrdersPage() {
                                                         isIconOnly
                                                         variant="danger-soft"
                                                         aria-label="Quitar producto"
-                                                        className="max-w-xs min-w-1/10"
+                                                        className="min-h-11 min-w-11 justify-self-end"
                                                         onPress={() =>
                                                             editing
                                                                 ? setEditLines((current) =>

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button, Card, Chip, Input, ListBox, Modal, Select, Spinner, Table } from '@heroui/react';
+import { Button, Card, Chip, ListBox, Modal, Select, Spinner, Table } from '@heroui/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FiAlertCircle, FiEdit3, FiPlus } from 'react-icons/fi';
 import { motion } from 'motion/react';
 import { createResource, listResource, updateResource, type ResourceItem } from '../services/api';
+import { NumberInput } from '../components/NumberInput';
 
 function text(value: unknown, fallback = '—') {
   return value === undefined || value === null || value === '' ? fallback : String(value);
@@ -152,13 +153,10 @@ export function InventoryPage() {
                     <span className="block text-sm font-medium text-default-700">
                       Cantidad inicial
                     </span>
-                    <Input
+                    <NumberInput
                       aria-label="Cantidad inicial"
-                      type="number"
-                      min="0"
-                      step="0.01"
                       value={quantity}
-                      onChange={(event) => setQuantity(event.target.value)}
+                      onValueChange={setQuantity}
                       required
                     />
                   </div>
@@ -216,14 +214,11 @@ export function InventoryPage() {
                     <span className="block text-sm font-medium text-default-700">
                       Nueva cantidad
                     </span>
-                    <Input
+                    <NumberInput
                       aria-label="Nueva cantidad"
                       autoFocus
-                      type="number"
-                      min="0"
-                      step="0.01"
                       value={quantity}
-                      onChange={(event) => setQuantity(event.target.value)}
+                      onValueChange={setQuantity}
                       required
                     />
                   </div>
@@ -262,7 +257,7 @@ export function InventoryPage() {
                     className="brew-table min-w-[720px] text-sm"
                   >
                     <Table.Header className="bg-default-100/80 text-xs uppercase tracking-wider text-default-600">
-                      <Table.Column>Producto</Table.Column>
+                      <Table.Column isRowHeader>Producto</Table.Column>
                       <Table.Column>Ubicación</Table.Column>
                       <Table.Column>Stock actual</Table.Column>
                       <Table.Column>Stock mínimo</Table.Column>
